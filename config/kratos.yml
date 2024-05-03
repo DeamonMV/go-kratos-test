@@ -1,4 +1,4 @@
-version: v1.0.0
+version: v1.1.0
 
 dsn: postgres://auth:secret@auth-db:5432/auth?sslmode=disable&max_conns=20&max_idle_conns=4
 
@@ -18,27 +18,14 @@ selfservice:
   methods:
     password:
       enabled: true
-
-    link:
-      enabled: true
       config:
-        lifespan: 15m
+        min_password_length: 6
+        identifier_similarity_check_enabled: false
+        haveibeenpwned_enabled: false
 
   flows:
     error:
       ui_url: http://localhost:4455/error
-
-    settings:
-      ui_url: http://localhost:4455/settings
-      privileged_session_max_age: 15m
-
-    recovery:
-      enabled: true
-      ui_url: http://localhost:4455/recovery
-      after:
-        hooks:
-          - hook: revoke_active_sessions
-
     verification:
       enabled: true
       ui_url: http://localhost:4455/verification
@@ -49,31 +36,40 @@ selfservice:
               url: http://self-service-go:4455/
               method: POST # GET, DELETE, etc
               body: file:///etc/kratos/config/identity.jsonnet
-
+    settings:
+      ui_url: http://localhost:4455/settings
+      privileged_session_max_age: 15m
+      required_aal: highest_available
+      after:
+        password:
+          hooks:
+            # Revoke other active user sessions after changing the password
+            # https://www.ory.sh/docs/kratos/session-management/revoke-sessions-hook
+            # https://www.ory.sh/docs/kratos/hooks/configure-hooks
+            - hook: revoke_active_sessions
+    recovery:
+      enabled: true
+      lifespan: 15m # Defines how much time the user has to complete the recovery flow in the UI. Default: 1h.
+      use: code # Defines which method is used, one of 'code' or 'link'.
+      ui_url: http://localhost:4455/recovery
+      notify_unknown_recipients: false # Defines if the system sends attempted recovery notifications to unregistered addresses.
     logout:
       after:
         default_browser_return_url: http://localhost:4455/login
-
     login:
-      lifespan: 10m
       ui_url: http://localhost:4455/login
       after:
-        default_browser_return_url: "http://localhost:4455/dashboard"
         password:
           hooks:
+            # explanation https://www.ory.sh/docs/actions/require-verified-address
             - hook: require_verified_address
-
     registration:
-      lifespan: 10m
       ui_url: http://localhost:4455/registration
-      after:
-        default_browser_return_url: http://localhost:4455/registered
-        hooks:
-          - hook: web_hook
-            config:
-              url: http://self-service-go:4455/
-              method: POST # GET, DELETE, etc
-              body: file:///etc/kratos/config/identity.jsonnet
+# this is enabling auto login after registration
+#      after:
+#        password:
+#          hooks:
+#            - hook: session
 
 log:
   level: debug

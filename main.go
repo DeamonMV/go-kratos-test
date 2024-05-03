@@ -61,7 +61,7 @@ func main() {
 // handleLogin handles kratos login flow
 func (s *server) handleLogin(w http.ResponseWriter, r *http.Request, cookie, flowID string) {
 	// get the login flow
-	flow, _, err := s.KratosAPIClient.FrontendApi.GetLoginFlow(ctx).Id(flowID).Cookie(cookie).Execute()
+	flow, _, err := s.KratosAPIClient.FrontendAPI.GetLoginFlow(ctx).Id(flowID).Cookie(cookie).Execute()
 	if err != nil {
 		writeError(w, http.StatusUnauthorized, err)
 		return
@@ -79,7 +79,7 @@ func (s *server) handleLogout(w http.ResponseWriter, r *http.Request) {
 	// get cookie from headers
 	cookie := r.Header.Get("cookie")
 	// create self-service logout flow for browser
-	flow, _, err := s.KratosAPIClient.FrontendApi.CreateBrowserLogoutFlow(ctx).Cookie(cookie).Execute()
+	flow, _, err := s.KratosAPIClient.FrontendAPI.CreateBrowserLogoutFlow(ctx).Cookie(cookie).Execute()
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
@@ -97,7 +97,7 @@ func (s *server) handleError(w http.ResponseWriter, r *http.Request) {
 	// get url query parameters
 	errorID := r.URL.Query().Get("id")
 	// get error details
-	errorDetails, _, err := s.KratosAPIClient.FrontendApi.GetFlowError(ctx).Id(errorID).Execute()
+	errorDetails, _, err := s.KratosAPIClient.FrontendAPI.GetFlowError(ctx).Id(errorID).Execute()
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err)
 		return
@@ -119,7 +119,7 @@ func (s *server) handleError(w http.ResponseWriter, r *http.Request) {
 // handleRegister handles kratos registration flow
 func (s *server) handleRegister(w http.ResponseWriter, r *http.Request, cookie, flowID string) {
 	// get the registration flow
-	flow, _, err := s.KratosAPIClient.FrontendApi.GetRegistrationFlow(ctx).Id(flowID).Cookie(cookie).Execute()
+	flow, _, err := s.KratosAPIClient.FrontendAPI.GetRegistrationFlow(ctx).Id(flowID).Cookie(cookie).Execute()
 	if err != nil {
 		writeError(w, http.StatusUnauthorized, err)
 		return
@@ -135,7 +135,7 @@ func (s *server) handleRegister(w http.ResponseWriter, r *http.Request, cookie, 
 // handleVerification handles kratos verification flow
 func (s *server) handleVerification(w http.ResponseWriter, r *http.Request, cookie, flowID string) {
 	// get self-service verification flow for browser
-	flow, _, err := s.KratosAPIClient.FrontendApi.GetVerificationFlow(ctx).Id(flowID).Cookie(cookie).Execute()
+	flow, _, err := s.KratosAPIClient.FrontendAPI.GetVerificationFlow(ctx).Id(flowID).Cookie(cookie).Execute()
 	if err != nil {
 		writeError(w, http.StatusUnauthorized, err)
 		return
@@ -171,12 +171,11 @@ func (s *server) handleRegistered(w http.ResponseWriter, r *http.Request) {
 // handleRecovery handles kratos recovery flow
 func (s *server) handleRecovery(w http.ResponseWriter, r *http.Request, cookie, flowID string) {
 	// get self-service recovery flow for browser
-	flow, _, err := s.KratosAPIClient.FrontendApi.GetRecoveryFlow(ctx).Id(flowID).Cookie(cookie).Execute()
+	flow, _, err := s.KratosAPIClient.FrontendAPI.GetRecoveryFlow(ctx).Id(flowID).Cookie(cookie).Execute()
 	if err != nil {
 		writeError(w, http.StatusUnauthorized, err)
 		return
 	}
-
 	templateData := templateData{
 		Title: "Password Recovery Form",
 		UI:    &flow.Ui,
@@ -188,12 +187,11 @@ func (s *server) handleRecovery(w http.ResponseWriter, r *http.Request, cookie, 
 // handleSettings handles kratos settings flow
 func (s *server) handleSettings(w http.ResponseWriter, r *http.Request, cookie, flowID string) {
 	// get self-service recovery flow for browser
-	flow, _, err := s.KratosAPIClient.FrontendApi.GetSettingsFlow(ctx).Id(flowID).Cookie(cookie).Execute()
+	flow, _, err := s.KratosAPIClient.FrontendAPI.GetSettingsFlow(ctx).Id(flowID).Cookie(cookie).Execute()
 	if err != nil {
 		writeError(w, http.StatusUnauthorized, err)
 		return
 	}
-
 	templateData := templateData{
 		Title: "Settings",
 		UI:    &flow.Ui,
@@ -207,7 +205,7 @@ func (s *server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 	// get cookie from headers
 	cookie := r.Header.Get("cookie")
 	// get session details
-	session, _, err := s.KratosAPIClient.FrontendApi.ToSession(ctx).Cookie(cookie).Execute()
+	session, _, err := s.KratosAPIClient.FrontendAPI.ToSession(ctx).Cookie(cookie).Execute()
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
@@ -231,6 +229,7 @@ func (s *server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 func NewServer(kratosPublicEndpointPort int) (*server, error) {
 	// create a new kratos client for self hosted server
 	conf := ory.NewConfiguration()
+	// Rename "http://kratos:%d" to "http://localhost:%d" if you want to run self-service not in docker
 	conf.Servers = ory.ServerConfigurations{{URL: fmt.Sprintf("http://kratos:%d", kratosPublicEndpointPort)}}
 	cj, err := cookiejar.New(nil)
 	if err != nil {

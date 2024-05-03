@@ -26,6 +26,10 @@
             }
           }
         },
+        "username": {
+          "title": "Username",
+          "type": "string"
+        },
         "name": {
           "type": "object",
           "properties": {
@@ -38,10 +42,22 @@
               "type": "string"
             }
           }
+        },
+        "tos": {
+          "title": "Accept Terms of Service",
+          "type": "boolean",
+          "description": "I accept the terms of service"
+          }
+        },
+        "newsletter": {
+          "type": "boolean",
+          "title": "Newsletter subscription"
         }
       },
       "required": [
-        "email"
+        "email",
+        "username",
+        "tos"
       ],
       "additionalProperties": false
     }
