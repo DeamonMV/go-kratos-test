@@ -47,7 +47,7 @@ func main() {
 	http.HandleFunc("/error", s.handleError)
 	http.HandleFunc("/registration", s.ensureCookieFlowID("registration", s.handleRegister))
 	http.HandleFunc("/verification", s.ensureCookieFlowID("verification", s.handleVerification))
-	http.HandleFunc("/registered", ensureCookieReferer(s.handleRegistered))
+	http.HandleFunc("/registered", s.ensureCookieReferer(s.handleRegistered))
 	http.HandleFunc("/dashboard", s.handleDashboard)
 	http.HandleFunc("/recovery", s.ensureCookieFlowID("recovery", s.handleRecovery))
 	http.HandleFunc("/settings", s.ensureCookieFlowID("settings", s.handleSettings))
@@ -281,7 +281,7 @@ func (s *server) ensureCookieFlowID(flowType string, next func(w http.ResponseWr
 }
 
 // ensureCookieReferer is a middleware function that ensures that cookie in header contains csrf_token and referer is not empty
-func ensureCookieReferer(next http.HandlerFunc) http.HandlerFunc {
+func (s *server) ensureCookieReferer(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// get cookie from headers
 		cookie := r.Header.Get("cookie")
